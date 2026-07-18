@@ -92,7 +92,7 @@
         }
         .barra-progresso { 
             height: 100%; 
-            width: 0%; 
+            width: 100%; 
             background: #00FF41; 
             transition: all 0.5s; 
             box-shadow: 0 0 8px #00FF4180;
@@ -290,7 +290,9 @@
             const rodados = Number((totalKm - ultimaTroca).toFixed(1));
             const faltam = Number((ultimaTroca + INTERVALO - totalKm).toFixed(1));
             const proximaTroca = Number((ultimaTroca + INTERVALO).toFixed(1));
-            const porcentagem = Math.min(Math.max((rodados / INTERVALO) * 100, 0), 100);
+            
+            // Nova lógica: A porcentagem agora representa o que RESTA do óleo (Regressiva)
+            const porcentagem = Math.min(Math.max((faltam / INTERVALO) * 100, 0), 100);
 
             document.getElementById('totalKm').textContent = formatarKm(totalKm);
             document.getElementById('ultimaTroca').textContent = formatarKm(ultimaTroca);
