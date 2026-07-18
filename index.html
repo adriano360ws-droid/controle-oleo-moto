@@ -273,37 +273,37 @@
             return valor.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' km';
         }
 
-        // Sistema Inteligente de Sons com Volumes Ajustados
+        // Sistema Inteligente de Sons com Volumes Configurados Personalizados
         function emitirSomStatus(tipo) {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 
                 if (tipo === 'verde') {
-                    // Som Verde: Volume Normal (0.3), Tom agradável e curto
+                    // Som Verde: Ajustado para 90% (0.9) de volume, Tom agradável e curto
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.frequency.value = 900; 
-                    gain.gain.value = 0.3; 
+                    gain.gain.value = 0.9; 
                     osc.start();
                     osc.stop(ctx.currentTime + 0.12);
                 } 
                 else if (tipo === 'amarelo') {
-                    // Som Amarelo: Volume Médio (0.6), Bipe duplo de Atenção
+                    // Som Amarelo: Ajustado para 50% (0.5) de volume, Bipe duplo de Atenção
                     [0, 0.15].forEach(atraso => {
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
                         osc.connect(gain);
                         gain.connect(ctx.destination);
                         osc.frequency.value = 800;
-                        gain.gain.value = 0.6;
+                        gain.gain.value = 0.5;
                         osc.start(ctx.currentTime + atraso);
                         osc.stop(ctx.currentTime + atraso + 0.08);
                     });
                 } 
                 else if (tipo === 'vermelho') {
-                    // Som Vermelho: Volume Alto (1.0), Tom mais grave e longo de Alerta
+                    // Som Vermelho: Ajustado no Volume Máximo (1.0), Tom grave de Alerta Urgente
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.connect(gain);
@@ -360,18 +360,18 @@
             salvarDados();
         }
 
-        // Função para disparar o som assim que o usuário tocar na tela pela primeira vez ao entrar
+        // Função para disparar o som assim que o usuário interagir com o app na entrada
         function ativarAudioEntrada() {
             if (!audioLiberadoPeloUsuario) {
                 audioLiberadoPeloUsuario = true;
-                atualizarTela(true); // Força a execução tocando o som do status atual
-                // Remove os escutadores para tocar apenas uma vez na entrada
+                atualizarTela(true); // Toca o som do status atual imediatamente na abertura
+                // Remove os escutadores para tocar apenas uma vez
                 document.removeEventListener('click', ativarAudioEntrada);
                 document.removeEventListener('touchstart', ativarAudioEntrada);
             }
         }
 
-        // Escuta qualquer toque na tela para contornar o bloqueio do Android
+        // Escuta interações para contornar o bloqueio de auto-play nativo dos navegadores
         document.addEventListener('click', ativarAudioEntrada);
         document.addEventListener('touchstart', ativarAudioEntrada);
 
@@ -402,6 +402,7 @@
             });
             atualizarTela(true);
             atualizarHistorico();
+            alert('Odômetro atual ajustado com sucesso!');
             document.getElementById('odometroAtual').value = '';
         }
 
@@ -417,6 +418,7 @@
             });
             atualizarTela(true);
             atualizarHistorico();
+            alert('KM da última troca ajustado com sucesso!');
             document.getElementById('odometroUltimaTroca').value = '';
         }
 
