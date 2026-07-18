@@ -2,32 +2,32 @@
   "theme_color": "#0F1A3A",
   "background_color": "#0F1A3A",
   "display": "standalone",
-  "scope": "/",
-  "start_url": "/index.html",
+  "scope": "/controle-oleo-moto/",
+  "start_url": "/controle-oleo-moto/index.html",
   "name": "Controle Troca de Óleo Moto",
   "short_name": "Óleo Moto",
   "description": "Aplicativo offline para controle de troca de óleo da moto, com cálculos automáticos, alertas e histórico",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "./icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -35,14 +35,14 @@
   ],
   "screenshots": [
     {
-      "src": "./icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Tela Inicial do Aplicativo"
     },
     {
-      "src": "./icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
