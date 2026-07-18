@@ -42,6 +42,9 @@
             margin-bottom: 14px; 
             border: 1px solid #00FF4133; 
         }
+        .card.ajustes {
+            border: 1px solid #ff990044;
+        }
         .total-odometro { text-align: center; }
         .total-odometro h2 { 
             font-size: 1.3rem; 
@@ -125,13 +128,16 @@
         .campo { 
             width: 100%; 
             padding: 14px; 
-            border: 2px solid #ff9900; 
+            border: 2px solid #00FF41; 
             border-radius: 10px; 
             font-size: 1.2rem; 
             margin: 8px 0; 
             background: #f0f0f0; 
             color: #0F1A3A; 
             font-weight: 500;
+        }
+        .campo.ajuste-campo {
+            border: 2px solid #ff9900;
         }
         .btn { 
             width: 100%; 
@@ -182,6 +188,14 @@
             margin-bottom: 6px;
             text-shadow: 0 0 4px #FFFFFF60;
         }
+        .secao-titulo {
+            color: #ff9900;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px #ff990044;
+        }
     </style>
 </head>
 <body>
@@ -205,17 +219,28 @@
         <button class="btn-status verde" id="btnStatus">PODE RODAR TRANQUILO</button>
     </div>
 
+    <!-- PAINEL DO DIA A DIA -->
     <div class="card">
         <label>DIGITE KM RODADO HOJE</label>
         <input type="text" class="campo" id="kmHoje" placeholder="Ex: 45,3">
         <button class="btn" onclick="adicionarKm()">ADICIONAR KM</button>
+        
+        <button class="btn" style="margin-top: 15px;" onclick="trocarOleo()">TROQUEI O ÓLEO HOJE</button>
+    </div>
 
-        <label style="margin-top:15px;">DIGITE O ODÔMETRO ATUAL</label>
-        <input type="text" class="campo" id="odometroAtual" placeholder="Ex: 4.250,0">
+    <!-- PAINEL DE CONFIGURAÇÕES E AJUSTES -->
+    <div class="card ajustes">
+        <div class="secao-titulo">PAINEL DE AJUSTES INICIAIS</div>
+
+        <label>DIGITE O ODÔMETRO ATUAL</label>
+        <input type="text" class="campo ajuste-campo" id="odometroAtual" placeholder="Ex: 4.250,0">
         <button class="btn secundario" onclick="ajustarOdometro()">AJUSTAR ODÔMETRO</button>
 
-        <button class="btn" style="margin-top:15px;" onclick="trocarOleo()">TROQUEI O ÓLEO</button>
-        <button class="btn secundario" onclick="limparHistorico()">LIMPAR HISTÓRICO</button>
+        <label style="margin-top:15px;">DIGITE O KM DA ÚLTIMA TROCA</label>
+        <input type="text" class="campo ajuste-campo" id="odometroUltimaTroca" placeholder="Ex: 3.581,5">
+        <button class="btn secundario" onclick="ajustarUltimaTroca()">AJUSTAR ÚLTIMA TROCA</button>
+
+        <button class="btn secundario" style="margin-top:20px;" onclick="limparHistorico()">LIMPAR HISTÓRICO</button>
         <button class="btn perigo" onclick="zerarTudo()">ZERAR TUDO</button>
     </div>
 
@@ -248,22 +273,24 @@
         }
 
         function tocarSom(volume) {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.frequency.value = 800;
-            gain.gain.value = volume;
-            osc.start();
-            osc.stop(ctx.currentTime + 0.15);
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                gain.gain.value = volume;
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+            } catch(e) { console.log("Áudio aguardando ação."); }
         }
 
         function atualizarTela() {
             const rodados = Number((totalKm - ultimaTroca).toFixed(1));
             const faltam = Number((ultimaTroca + INTERVALO - totalKm).toFixed(1));
             const proximaTroca = Number((ultimaTroca + INTERVALO).toFixed(1));
-            const porcentagem = Math.min((rodados / INTERVALO) * 100, 100);
+            const porcentagem = Math.min(Math.max((rodados / INTERVALO) * 100, 0), 100);
 
             document.getElementById('totalKm').textContent = formatarKm(totalKm);
             document.getElementById('ultimaTroca').textContent = formatarKm(ultimaTroca);
@@ -271,8 +298,13 @@
             document.getElementById('rodados').textContent = formatarKm(rodados);
             
             const elFaltam = document.getElementById('faltam');
-            elFaltam.textContent = formatarKm(Math.abs(faltam)) + (faltam < 0 ? ' (excedido)' : '');
-            elFaltam.className = faltam < 0 ? 'valor excedido' : 'valor';
+            if (faltam < 0) {
+                elFaltam.textContent = formatarKm(Math.abs(faltam)) + ' (excedido)';
+                elFaltam.className = 'valor excedido';
+            } else {
+                elFaltam.textContent = formatarKm(faltam);
+                elFaltam.className = 'valor';
+            }
 
             const barra = document.getElementById('barra');
             const btnStatus = document.getElementById('btnStatus');
@@ -282,17 +314,16 @@
                 barra.className = 'barra-progresso';
                 btnStatus.className = 'btn-status verde';
                 btnStatus.textContent = 'PODE RODAR TRANQUILO';
-                tocarSom(0.3);
             } else if (faltam <= 300 && faltam > 50) {
                 barra.className = 'barra-progresso amarelo';
                 btnStatus.className = 'btn-status amarelo';
                 btnStatus.textContent = 'ATENÇÃO: AGENDE A TROCA';
-                tocarSom(0.6);
+                tocarSom(0.4);
             } else {
                 barra.className = 'barra-progresso vermelho';
                 btnStatus.className = 'btn-status vermelho';
                 btnStatus.textContent = 'FAZER TROCA IMEDIATA';
-                tocarSom(0.95);
+                tocarSom(0.7);
             }
             salvarDados();
         }
@@ -303,7 +334,7 @@
             totalKm = Number((totalKm + valor).toFixed(1));
             historico.unshift({
                 data: new Date().toLocaleString('pt-BR'),
-                tipo: 'Adição',
+                tipo: 'Adição Diária',
                 valor: valor,
                 total: totalKm
             });
@@ -314,11 +345,11 @@
 
         function ajustarOdometro() {
             const valor = parseFloat(document.getElementById('odometroAtual').value.replace(',', '.'));
-            if (isNaN(valor) || valor < totalKm) { alert('Valor deve ser numérico e maior que o atual!'); return; }
+            if (isNaN(valor) || valor < 0) { alert('Digite um valor válido!'); return; }
             totalKm = Number(valor.toFixed(1));
             historico.unshift({
                 data: new Date().toLocaleString('pt-BR'),
-                tipo: 'Ajuste',
+                tipo: 'Ajuste Odômetro',
                 valor: valor,
                 total: totalKm
             });
@@ -327,12 +358,27 @@
             document.getElementById('odometroAtual').value = '';
         }
 
+        function ajustarUltimaTroca() {
+            const valor = parseFloat(document.getElementById('odometroUltimaTroca').value.replace(',', '.'));
+            if (isNaN(valor) || valor < 0) { alert('Digite um valor válido!'); return; }
+            ultimaTroca = Number(valor.toFixed(1));
+            historico.unshift({
+                data: new Date().toLocaleString('pt-BR'),
+                tipo: 'Ajuste Última Troca',
+                valor: valor,
+                total: totalKm
+            });
+            atualizarTela();
+            atualizarHistorico();
+            document.getElementById('odometroUltimaTroca').value = '';
+        }
+
         function trocarOleo() {
-            if (!confirm('Confirma que trocou o óleo? Vai reiniciar a contagem!')) return;
+            if (!confirm('Confirma que trocou o óleo? Isso vai reiniciar a contagem baseando-se no KM atual!')) return;
             ultimaTroca = Number(totalKm.toFixed(1));
             historico.unshift({
                 data: new Date().toLocaleString('pt-BR'),
-                tipo: 'Troca de óleo',
+                tipo: 'Troca de Óleo',
                 valor: totalKm,
                 total: totalKm
             });
@@ -369,12 +415,8 @@
 
         carregarDados();
 
-        // Código do Service Worker integrado diretamente na página para evitar loops e erros no CodePen
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const CACHE_NOME = 'controle-oleo-moto-v2';
-                const ARQUIVOS_CACHE = ['./', './index.html', './manifest.json'];
-
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(reg => console.log('Service Worker registrado!', reg))
                     .catch(err => console.error('Erro no Worker:', err));
