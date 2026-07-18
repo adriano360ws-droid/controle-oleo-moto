@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Controle Troca de Óleo Moto</title>
+    
+    <!-- Conexão com o arquivo de configuração do PWA -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- Configuração dos Ícones para Celular (Android, iPhone e iPad) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+
     <meta name="theme-color" content="#0F1A3A">
     <meta name="background-color" content="#0F1A3A">
     <style>
@@ -358,6 +368,18 @@
         }
 
         carregarDados();
+
+        // Código do Service Worker integrado diretamente na página para evitar loops e erros no CodePen
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const CACHE_NOME = 'controle-oleo-moto-v2';
+                const ARQUIVOS_CACHE = ['./', './index.html', './manifest.json'];
+
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registrado!', reg))
+                    .catch(err => console.error('Erro no Worker:', err));
+            });
+        }
     </script>
 </body>
 </html>
