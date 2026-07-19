@@ -14,6 +14,11 @@
     <link class="apple-touch-icon" sizes="192x192" href="./icon-192.png">
     <link class="apple-touch-icon" sizes="512x512" href="./icon-512.png">
 
+    <!-- Fonte Esportiva/Digital para o Odômetro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
     <meta name="theme-color" content="#0F1A3A">
     <meta name="background-color" content="#0F1A3A">
     <style>
@@ -45,43 +50,76 @@
         .card.ajustes {
             border: 1px solid #ff990044;
         }
-        .total-odometro { text-align: center; }
+        
+        /* DESIGN DO ODÔMETRO EMPILHADO */
+        .total-odometro { 
+            text-align: center; 
+            padding: 22px 10px;
+        }
         .total-odometro h2 { 
-            font-size: 1.3rem; 
+            font-size: 1.1rem; 
             color: #FFFFFF; 
             font-weight: bold; 
+            letter-spacing: 2px;
             text-shadow: 0 0 5px #FFFFFF80;
-            margin-bottom: 8px; 
+            margin-bottom: 5px; 
+        }
+        .valor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .valor-grande { 
-            font-size: 3.2rem; 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.8rem; 
             font-weight: 900; 
             color: #00FF41; 
-            text-shadow: 0 0 12px #00FF4180; 
+            text-shadow: 0 0 15px #00FF41a0; 
+            line-height: 1;
+            margin: 6px 0;
+            letter-spacing: 1px;
         }
+        .unidade-km {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: #00FF41;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px #00FF4180; 
+            opacity: 0.9;
+        }
+
+        /* FORMATO DIGITAL PARA AS LINHAS INFERIORES */
         .linha { 
             display: flex; 
             justify-content: space-between; 
-            padding: 10px 0; 
+            align-items: center;
+            padding: 12px 0; 
             border-bottom: 1px solid #ffffff1a; 
-            font-size: 1.2rem; 
         }
         .linha:last-child { border: none; padding-bottom: 0; }
         .rotulo { 
             color: #FFFFFF; 
-            font-size: 1.2rem; 
+            font-size: 1.05rem; 
             font-weight: 700; 
             text-shadow: 0 0 4px #FFFFFF60;
+            max-width: 55%;
         }
         .valor { 
-            font-weight: bold; 
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900; 
             color: #00FF41; 
-            font-size: 1.25rem; 
+            font-size: 1.4rem; 
+            text-shadow: 0 0 10px #00FF4160;
+            text-align: right;
+            white-space: nowrap;
         }
         .valor.excedido { 
             color: #ff3333; 
-            text-shadow: 0 0 6px #ff333380;
+            text-shadow: 0 0 10px #ff3333aa;
         }
+
         .barra-fundo { 
             width: 100%; 
             height: 24px; 
@@ -203,7 +241,10 @@
 
     <div class="card total-odometro">
         <h2>ODÔMETRO TOTAL</h2>
-        <div class="valor-grande" id="totalKm">0,0 km</div>
+        <div class="valor-container">
+            <div class="valor-grande" id="totalKm">0.0</div>
+            <div class="unidade-km">KM</div>
+        </div>
     </div>
 
     <div class="card">
@@ -261,7 +302,7 @@
             totalKm = dados.totalKm || 0;
             ultimaTroca = dados.ultimaTroca || 0;
             historico = dados.historico || [];
-            atualizarTela(false); // Carrega a tela inicial sem forçar som bloqueado
+            atualizarTela(false);
             atualizarHistorico();
         }
 
@@ -269,17 +310,20 @@
             localStorage.setItem('controleOleoMoto', JSON.stringify({totalKm, ultimaTroca, historico}));
         }
 
+        // Formatação unificada aplicando a fonte digital e mantendo a caixa baixa estável no sufixo "km"
         function formatarKm(valor) {
             return valor.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' km';
         }
 
-        // Sistema Inteligente de Sons com Volumes Configurados Personalizados
+        function formatarApenasNumero(valor) {
+            return valor.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+        }
+
         function emitirSomStatus(tipo) {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 
                 if (tipo === 'verde') {
-                    // Som Verde: Ajustado para 90% (0.9) de volume, Tom agradável e curto
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.connect(gain);
@@ -290,7 +334,6 @@
                     osc.stop(ctx.currentTime + 0.12);
                 } 
                 else if (tipo === 'amarelo') {
-                    // Som Amarelo: Ajustado para 50% (0.5) de volume, Bipe duplo de Atenção
                     [0, 0.15].forEach(atraso => {
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
@@ -303,7 +346,6 @@
                     });
                 } 
                 else if (tipo === 'vermelho') {
-                    // Som Vermelho: Ajustado no Volume Máximo (1.0), Tom grave de Alerta Urgente
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.connect(gain);
@@ -323,7 +365,7 @@
             
             const porcentagem = Math.min(Math.max((faltam / INTERVALO) * 100, 0), 100);
 
-            document.getElementById('totalKm').textContent = formatarKm(totalKm);
+            document.getElementById('totalKm').textContent = formatarApenasNumero(totalKm);
             document.getElementById('ultimaTroca').textContent = formatarKm(ultimaTroca);
             document.getElementById('proximaTroca').textContent = formatarKm(proximaTroca);
             document.getElementById('rodados').textContent = formatarKm(rodados);
@@ -360,18 +402,15 @@
             salvarDados();
         }
 
-        // Função para disparar o som assim que o usuário interagir com o app na entrada
         function ativarAudioEntrada() {
             if (!audioLiberadoPeloUsuario) {
                 audioLiberadoPeloUsuario = true;
-                atualizarTela(true); // Toca o som do status atual imediatamente na abertura
-                // Remove os escutadores para tocar apenas uma vez
+                atualizarTela(true);
                 document.removeEventListener('click', ativarAudioEntrada);
                 document.removeEventListener('touchstart', ativarAudioEntrada);
             }
         }
 
-        // Escuta interações para contornar o bloqueio de auto-play nativo dos navegadores
         document.addEventListener('click', ativarAudioEntrada);
         document.addEventListener('touchstart', ativarAudioEntrada);
 
